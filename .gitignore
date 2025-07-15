@@ -1,0 +1,62 @@
+# =================================================================
+# Genel ve IDE Ayarları
+# =================================================================
+.idea/
+*.iml
+.vscode/
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# =================================================================
+# Java / Maven (Backend için)
+# =================================================================
+# Derlenmiş dosyalar
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+build-tool-versions.properties
+
+# Derlenmiş Java class dosyaları
+*.class
+
+# Log dosyaları
+*.log
+
+# Maven sarmalayıcı (wrapper)
+.mvn/
+
+# Paket dosyaları
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# VM crash logs
+hs_err_pid*
+replay_pid*
+
+
+# =================================================================
+# Node.js / Vite / React (Frontend için)
+# =================================================================
+# Bağımlılıklar
+/node_modules
+/.pnp
+.pnp.js
+
+# Üretim (build) çıktısı
+/dist
+/build
+
+# Ortam değişkenleri dosyaları (Gizli kalmalı!)
+.env.local
+.env.*.local
