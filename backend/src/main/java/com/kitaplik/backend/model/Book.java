@@ -3,7 +3,6 @@ package com.kitaplik.backend.model;
 import jakarta.persistence.*;
 import java.util.Objects;
 
-// @Data ANOTASYONUNU KALDIRDIK!
 @Entity
 @Table(name = "books")
 public class Book {
@@ -15,21 +14,22 @@ public class Book {
     private String title;
     private String author;
     private int publicationYear;
-    private String isbn;
+    private String genre; // Alan adımız 'genre' olarak güncellendi.
 
-    // Gerekli constructor'lar
+    // Gerekli constructor'lar (Boş olan JPA için gereklidir)
     public Book() {
     }
 
-    public Book(Long id, String title, String author, int publicationYear, String isbn) {
+    // Parametreli constructor'ı da güncelleyelim.
+    public Book(Long id, String title, String author, int publicationYear, String genre) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.publicationYear = publicationYear;
-        this.isbn = isbn;
+        this.genre = genre; // Parametre adı da 'genre' oldu.
     }
 
-    // --- MANUEL OLARAK EKLENEN GETTER VE SETTER METOTLARI ---
+    // --- MANUEL GETTER VE SETTER METOTLARI (İSİMLERİ DÜZELTİLDİ) ---
 
     public Long getId() {
         return id;
@@ -63,26 +63,30 @@ public class Book {
         this.publicationYear = publicationYear;
     }
 
-    public String getIsbn() {
-        return isbn;
+    // --- BURASI TAMAMEN GÜNCELLENDİ ---
+    // Metot adları artık 'genre' alanına uygun
+    public String getGenre() {
+        return genre;
     }
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
+    public void setGenre(String genre) {
+        this.genre = genre;
     }
+    // ------------------------------------
 
-    // equals, hashCode ve toString (Lombok'un @Data'sının yaptığı diğer işler)
+
+    // equals, hashCode ve toString metotları da güncellendi.
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
-        return publicationYear == book.publicationYear && Objects.equals(id, book.id) && Objects.equals(title, book.title) && Objects.equals(author, book.author) && Objects.equals(isbn, book.isbn);
+        return publicationYear == book.publicationYear && Objects.equals(id, book.id) && Objects.equals(title, book.title) && Objects.equals(author, book.author) && Objects.equals(genre, book.genre);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, author, publicationYear, isbn);
+        return Objects.hash(id, title, author, publicationYear, genre);
     }
 
     @Override
@@ -92,7 +96,7 @@ public class Book {
                 ", title='" + title + '\'' +
                 ", author='" + author + '\'' +
                 ", publicationYear=" + publicationYear +
-                ", isbn='" + isbn + '\'' +
+                ", genre='" + genre + '\'' + // Burası da 'genre' olarak güncellendi.
                 '}';
     }
 }

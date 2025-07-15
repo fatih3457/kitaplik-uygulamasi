@@ -21,42 +21,35 @@ public class BookService {
         return bookRepository.findAll();
     }
 
-    // Yeni bir kitap oluşturur
+    // Yeni bir kitap oluşturur (addBook ile aynı işi yaptığı için birleştirildi)
     public Book createBook(Book newBook) {
+        // ID'nin null olduğundan emin olarak yeni bir kayıt olduğunu garantileyebiliriz.
+        // newBook.setId(null); // Gerekirse bu satır eklenebilir.
         return bookRepository.save(newBook);
     }
-
 
     // Belirtilen ID'ye sahip kitabı günceller
     public Optional<Book> updateBook(Long id, Book updatedBookDetails) {
         // 1. Güncellenecek kitabı ID'si ile veritabanında ara
-        Optional<Book> optionalBook = bookRepository.findById(id);
-
-        // 2. Kitap bulunduysa, bilgilerini güncelle
-        if (optionalBook.isPresent()) {
-            Book existingBook = optionalBook.get();
-            existingBook.setTitle(updatedBookDetails.getTitle());
-            existingBook.setAuthor(updatedBookDetails.getAuthor());
-            existingBook.setPublicationYear(updatedBookDetails.getPublicationYear());
-            existingBook.setIsbn(updatedBookDetails.getIsbn());
-
-            // 3. Güncellenmiş kitabı kaydet ve geri döndür
-            return Optional.of(bookRepository.save(existingBook));
-        } else {
-            // 4. Kitap bulunamadıysa, boş bir Optional döndür
-            return Optional.empty();
-        }
+        return bookRepository.findById(id)
+                .map(existingBook -> {
+                    // 2. Kitap bulunduysa, bilgilerini güncelle
+                    existingBook.setTitle(updatedBookDetails.getTitle());
+                    existingBook.setAuthor(updatedBookDetails.getAuthor());
+                    existingBook.setPublicationYear(updatedBookDetails.getPublicationYear());
+                    existingBook.setGenre(updatedBookDetails.getGenre());
+                    // 3. Güncellenmiş kitabı kaydet
+                    return bookRepository.save(existingBook);
+                });
+        // .map() sayesinde, kitap bulunamazsa otomatik olarak boş Optional döner.
     }
 
-    // Kitap silme
+    // Belirtilen ID'ye sahip kitabı siler
     public boolean deleteBook(Long id) {
-        // 1. Silinecek kitabın var olup olmadığını kontrol et
         if (bookRepository.existsById(id)) {
-            // 2. Kitap varsa sil
             bookRepository.deleteById(id);
             return true; // Silme işlemi başarılı
         }
-        // 3. Kitap yoksa, silinemediğini belirt
         return false; // Silme işlemi başarısız (kitap bulunamadı)
     }
 }

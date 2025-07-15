@@ -25,14 +25,13 @@ public class BookController {
         return ResponseEntity.ok(books);
     }
 
-    // POST /api/books -> Yeni bir kitap oluşturur
+    // POST /api/books -> Yeni bir kitap oluşturur (Çakışma giderildi)
     @PostMapping
     public ResponseEntity<Book> createBook(@RequestBody Book newBook) {
         Book createdBook = bookService.createBook(newBook);
         return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
     }
 
-    // --- YENİ EKLENEN METOT ---
     // PUT /api/books/{id} -> Belirtilen ID'ye sahip kitabı günceller
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book bookDetails) {
@@ -40,6 +39,8 @@ public class BookController {
                 .map(ResponseEntity::ok) // Kitap bulunduysa 200 OK ve kitabı döndür
                 .orElse(ResponseEntity.notFound().build()); // Kitap bulunamadıysa 404 Not Found döndür
     }
+
+    // DELETE /api/books/{id} -> Belirtilen ID'ye sahip kitabı siler
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         if (bookService.deleteBook(id)) {
