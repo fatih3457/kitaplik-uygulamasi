@@ -12,19 +12,24 @@ export const AuthProvider = ({ children }) => {
 
     // Bu useEffect, token state'i her değiştiğinde çalışır.
     useEffect(() => {
+        console.log("AuthContext: Token değişti. Yeni token:", token);
         if (token) {
-            // Eğer token varsa, axios'un varsayılan header'larına ekliyoruz.
-            // Bu sayede bundan sonraki TÜM axios istekleri bu token ile gönderilir.
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            // Token'ı localStorage'a kaydederek kalıcı hale getiriyoruz.
+            const bearerToken = `Bearer ${token}`;
+            console.log("AuthContext: Axios header'ı ayarlanıyor:", bearerToken); // <-- YENİ LOG
+
+            // Axios varsayılan header'ını ayarla
+            axios.defaults.headers.common['Authorization'] = bearerToken;
+
+            // localStorage'ı güncelle
             localStorage.setItem('token', token);
         } else {
-            // Eğer token yoksa (null ise, yani çıkış yapıldıysa), header'ı siliyoruz.
+            console.log("AuthContext: Token yok. Axios header'ı ve localStorage temizleniyor."); // <-- YENİ LOG
             delete axios.defaults.headers.common['Authorization'];
-            // localStorage'dan da token'ı kaldırıyoruz.
             localStorage.removeItem('token');
         }
-    }, [token]); // Bağımlılık dizisinde [token] olduğu için sadece token değiştiğinde çalışır.
+    }, [token]);
+
+    // ... login, logout fonksiyonları aynı ...// Bağımlılık dizisinde [token] olduğu için sadece token değiştiğinde çalışır.
 
 
     // Giriş yapma fonksiyonu

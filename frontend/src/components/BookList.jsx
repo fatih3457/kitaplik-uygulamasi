@@ -1,7 +1,8 @@
 import React from 'react';
 
-// Yeni 'isLoggedIn' prop'unu al
-const BookList = ({ books, onBookDeleted, isLoggedIn }) => {
+// Yeni 'onEditClick' prop'unu da alıyoruz.
+const BookList = ({ books, onBookDeleted, isLoggedIn, onEditClick }) => {
+
     if (!books) {
         return <p>Yükleniyor...</p>;
     }
@@ -21,13 +22,23 @@ const BookList = ({ books, onBookDeleted, isLoggedIn }) => {
                                 <small className="text-muted">Tür: {book.genre}</small>
                             </div>
 
-                            {/* Eğer kullanıcı giriş yapmışsa Sil butonunu göster */}
+                            {/* Sadece giriş yapıldıysa butonları göster */}
                             {isLoggedIn && (
-                                <button
-                                    className="btn btn-danger btn-sm"
-                                    onClick={() => onBookDeleted(book.id)}>
-                                    Sil
-                                </button>
+                                <div className="btn-group">
+                                    <button
+                                        className="btn btn-warning btn-sm"
+                                        // onClick olayı artık HomePage'deki handleEditClick'i tetikliyor
+                                        // Parametre olarak tüm 'book' nesnesini gönderiyoruz
+                                        onClick={() => onEditClick(book)}
+                                    >
+                                        Düzenle
+                                    </button>
+                                    <button
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => onBookDeleted(book.id)}>
+                                        Sil
+                                    </button>
+                                </div>
                             )}
                         </li>
                     ))}

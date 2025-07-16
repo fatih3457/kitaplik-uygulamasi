@@ -1,28 +1,28 @@
 package com.kitaplik.backend.config;
 
 import com.kitaplik.backend.service.JwtService;
+import com.kitaplik.backend.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.lang.NonNull;
+import lombok.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component // Bu sınıfın bir Spring Bean'i olduğunu belirtir
-public class JwtAuthFilter extends OncePerRequestFilter { // Her istekte sadece bir kez çalışmasını sağlar
+@Component
+public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
 
-    public JwtAuthFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    public JwtAuthFilter(JwtService jwtService, UserDetailsServiceImpl userDetailsService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
@@ -33,37 +33,56 @@ public class JwtAuthFilter extends OncePerRequestFilter { // Her istekte sadece 
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. Authorization header'ını al
+        // Gelen isteğin başlığından (header) "Authorization" bilgisini al
         final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String username;
 
-        // 2. Header yoksa veya "Bearer " ile başlamıyorsa, isteği sonraki filtreye devam ettir
+        // Eğer Authorization başlığı yoksa veya "Bearer " ile başlamıyorsa,
+        // bu isteğin JWT ile ilgisi yoktur, filtre zincirindeki bir sonraki adıma geç.
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3. "Bearer " kısmını atıp sadece token'ı al
-        final String jwt = authHeader.substring(7);
-        final String username = jwtService.extractUsername(jwt);
+        // "Bearer " ifadesini (7 karakter) atlayarak sadece token'ın kendisini al
+        jwt = authHeader.substring(7);
 
-        // 4. Token'dan kullanıcı adı alındıysa VE henüz güvenlik konteksinde bir kimlik yoksa
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // 5. Veritabanından kullanıcı detaylarını al
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            // 6. Token geçerli mi diye kontrol et
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                // 7. Token geçerliyse, Spring Security için bir AuthenticationToken oluştur
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null, // credentials (şifre) artık gerekli değil
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // 8. Oluşturulan kimliği Security Context'e yerleştir
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        try {
+            // Token'dan kullanıcı adını (username) çıkar
+            username = jwtService.extractUsername(jwt);
+
+            // Eğer kullanıcı adı varsa VE bu kullanıcı için henüz bir kimlik doğrulama işlemi yapılmadıysa
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Veritabanından kullanıcı bilgilerini yükle
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
+                // Token'ın bu kullanıcı için geçerli olup olmadığını kontrol et
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    // Eğer token geçerliyse, Spring Security için bir kimlik doğrulama token'ı oluştur
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null, // Şifre bilgisine gerek yok, çünkü JWT ile doğrulandı
+                            userDetails.getAuthorities()
+                    );
+                    // Oluşturulan token'a isteğin detaylarını ekle
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    // Son olarak, bu kimlik doğrulama bilgisini Spring Security'nin ana context'ine yerleştir.
+                    // Bu andan itibaren bu istek, kimliği doğrulanmış bir kullanıcı tarafından yapılmış sayılır.
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception e) {
+            // Token işlenirken bir hata olursa (süre dolması, imza hatası vb.),
+            // hatayı konsola yazdırıp, kimlik doğrulaması yapmadan devam et.
+            // Bu, güvenlik katmanının isteği reddetmesini sağlar.
+            System.err.println("JWT token'ı işlenirken bir hata oluştu: " + e.getMessage());
         }
-        // 9. İsteği zincirdeki bir sonraki filtreye devam ettir
+
+
+        // Filtre zincirindeki bir sonraki adıma devam et
         filterChain.doFilter(request, response);
     }
 }

@@ -28,6 +28,9 @@ public class BookController {
     // POST /api/books -> Yeni bir kitap oluşturur (Çakışma giderildi)
     @PostMapping
     public ResponseEntity<Book> createBook(@RequestBody Book newBook) {
+        System.out.println("--- createBook endpoint'i tetiklendi! ---");
+        System.out.println("Gelen Kitap Başlığı: " + newBook.getTitle());
+        System.out.println("Gelen Yazar: " + newBook.getAuthor());
         Book createdBook = bookService.createBook(newBook);
         return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
     }

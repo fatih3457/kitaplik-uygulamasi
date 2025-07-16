@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const RegisterPage = () => {
     // Form verilerini tutmak için state'ler
     const [name, setName] = useState('');
-    const [username, setUsername] =  useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
 

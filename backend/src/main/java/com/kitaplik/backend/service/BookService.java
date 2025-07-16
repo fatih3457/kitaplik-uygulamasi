@@ -17,8 +17,11 @@ public class BookService {
     }
 
     // Tüm kitapları getirir
+    // BookService.java içinde
     public List<Book> getAllBooks() {
-        return bookRepository.findAll();
+        List<Book> booksFromDb = bookRepository.findAll();
+        System.out.println("--- Veritabanından " + booksFromDb.size() + " adet kitap bulundu. ---");
+        return booksFromDb;
     }
 
     // Yeni bir kitap oluşturur (addBook ile aynı işi yaptığı için birleştirildi)
